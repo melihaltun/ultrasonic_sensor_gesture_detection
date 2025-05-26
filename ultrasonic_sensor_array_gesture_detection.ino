@@ -15,19 +15,25 @@
 // Sensor configuration
 const float sensorSpacing = 5.0;  // Distance between adjacent sensors (cm)
 const float d = sensorSpacing;
+const int echoDelay = 10;
+const int cycleDelay = 40;
+const int loopDelay = max(20, cycleDelay - 2*echoDelay);
+const int maxTrackLostIgnoreCnt = 1;
+const int maxDist = 200;
 
 // Hysteresis tracking config
-const long max_z = 50;        // Detection threshold (cm)
+const long max_z = 25;        // Detection threshold (cm)
 const long hysteresis = 5;    // Hysteresis range (cm)
+int trackLostCnt = 0;
 
 // Tracking state definition
 enum TrackingState { NO_OBJECT, ACQUIRED, TRACKING, LOST };
 TrackingState currentState = NO_OBJECT;
 
 // gesture config
-const unsigned long min_gesture_duration = 100;      // in milliseconds
-const unsigned long max_tap_duration = 500;          // max for tap vs tap-hold
-const float min_swipe_distance = 2.0;                // cm threshold for swipe
+const unsigned long min_gesture_duration = 150;      // in milliseconds
+const unsigned long max_tap_duration = 800;          // max for tap vs tap-hold
+const float min_swipe_distance = 1.5;                // cm threshold for swipe
 
 // Gesture enum type
 enum GestureType { NO_GESTURE, TAP, TAP_HOLD, SWIPE_LEFT, SWIPE_RIGHT };
@@ -112,10 +118,13 @@ void printTrackingState() {
 
 void measureDistances() {
   dist_left = sr04_left.Distance();
-  delay(10);  // delay to minimize interference between sensors
+  dist_left = min(dist_left, maxDist);
+  delay(echoDelay);  // delay to minimize interference between sensors
   dist_mid = sr04_mid.Distance();
-  delay(10);
+  dist_mid = min(dist_mid, maxDist);
+  delay(echoDelay);
   dist_right = sr04_right.Distance();
+  dist_right = min(dist_right, maxDist);
 }
 
 float estimateXPosition() {
@@ -160,12 +169,14 @@ void trackObjectState(float x, long z) {
   switch (currentState) {
     case NO_OBJECT:
     case LOST:
+      trackLostCnt++;
       if (z < (max_z - hysteresis)) {
         currentState = ACQUIRED;
         tracked_x = x;
         tracked_z = z;
         x_acquired = x;
         t_acquired = millis();
+        trackLostCnt = 0;
       }
       break;
 
@@ -175,15 +186,21 @@ void trackObjectState(float x, long z) {
         currentState = LOST;
         x_lost = tracked_x;
         t_lost = millis();
-        GestureType gesture = detectGesture();
-        printGesture(gesture);
+        trackLostCnt++;
       } else {
         currentState = TRACKING;
         tracked_x = x;
         tracked_z = z;
+        trackLostCnt = 0;
       }
       break;
   }
+  if(trackLostCnt == maxTrackLostIgnoreCnt + 1) {
+     GestureType gesture = detectGesture();
+     printGesture(gesture);
+  }
+  else if (trackLostCnt > 2*maxTrackLostIgnoreCnt + 1)
+    trackLostCnt--;
 }
 
 void setup() {
@@ -193,7 +210,7 @@ void setup() {
 
 void loop() {
   measureDistances();
-  // printDistances();  // Optional: Uncomment to debug raw sensor data
+  //printDistances();  // Optional: Uncomment to debug raw sensor data
 
   float xPos = estimateXPosition();
   long zPos = estimateZPosition();
@@ -201,5 +218,5 @@ void loop() {
   trackObjectState(xPos, zPos);
   printTrackingState();
 
-  delay(30);
+  delay(loopDelay);
 }
