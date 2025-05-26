@@ -1,5 +1,5 @@
 # ultrasonic_sensor_gesture_detection
-Arduino code for detecting basic hand gestures using three HC-SR04 ultrasonic distance sensors. 
+Arduino code for detecting basic hand gestures using HC-SR04 ultrasonic distance sensor array. 
 
 ![image](https://github.com/user-attachments/assets/857f8a34-5d09-4f38-84e8-94c185794c7c)
 
