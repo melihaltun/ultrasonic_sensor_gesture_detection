@@ -12,7 +12,7 @@ The defined gestures are:
 - Swipe left: object approaches and moves left before receding
 - Swipe right: object approaches and moves right before receding
 
-The code measures distances from 3 sensors. If a nearby object is detected it's position is tracked. If object is tracked more than minimum time limit, based on the motion of the object one of the 4 gestures is reported.
+The code measures distances from 3 sensors. If a nearby object is detected, its position is tracked. If object is tracked more than minimum time limit, based on the motion of the object one of the 4 gestures is reported.
 
 To setup:
 
