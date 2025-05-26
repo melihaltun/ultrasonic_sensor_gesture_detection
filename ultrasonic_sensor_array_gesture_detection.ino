@@ -26,7 +26,7 @@ TrackingState currentState = NO_OBJECT;
 
 // gesture config
 const unsigned long min_gesture_duration = 100;      // in milliseconds
-const unsigned long max_tap_duration = 400;          // max for tap vs tap-hold
+const unsigned long max_tap_duration = 500;          // max for tap vs tap-hold
 const float min_swipe_distance = 2.0;                // cm threshold for swipe
 
 // Gesture enum type
